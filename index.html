@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اپلیکیشن دانش‌آموز | نسخه نهایی</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2D65FF; --bg: #F8FAFF; --card: #FFFFFF;
+            --text: #1A1C1E; --sub: #7C828A; --shadow: 0 10px 30px rgba(45, 101, 255, 0.08);
+            --green: #10B981; --red: #FF3B30;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px;
+        }
+
+        .container { max-width: 450px; margin: auto; padding: 20px; }
+
+        /* کارت‌های آمار */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 20px 0; }
+        .stat-card {
+            background: var(--card); padding: 15px; border-radius: 20px;
+            text-align: center; box-shadow: var(--shadow);
+        }
+        .stat-card h3 { margin: 0; color: var(--primary); font-size: 1.2rem; }
+        .stat-card p { margin: 5px 0 0; font-size: 0.7rem; color: var(--sub); font-weight: bold; }
+
+        /* لیست آزمون‌ها */
+        .quiz-item {
+            background: var(--card); border-radius: 22px; padding: 18px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 12px;
+            box-shadow: var(--shadow); cursor: pointer;
+        }
+        .quiz-icon-box {
+            width: 45px; height: 45px; background: rgba(45, 101, 255, 0.1);
+            color: var(--primary); border-radius: 14px; display: flex;
+            align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .quiz-details h4 { margin: 0 0 4px; font-size: 0.95rem; }
+        .quiz-details p { margin: 0; color: var(--sub); font-size: 0.75rem; }
+
+        /* بخش نمودار میله‌ای (شبیه عکس) */
+        .chart-container {
+            background: var(--card); border-radius: 25px; padding: 20px;
+            box-shadow: var(--shadow); margin-top: 20px;
+        }
+        .bar-chart {
+            display: flex; align-items: flex-end; justify-content: space-around;
+            height: 150px; margin-top: 20px; padding-bottom: 10px; border-bottom: 2px solid #F0F4F8;
+        }
+        .bar {
+            width: 30px; background: var(--primary); border-radius: 8px 8px 4px 4px;
+            position: relative; transition: 0.5s ease-in-out;
+        }
+        .bar::after {
+            content: attr(data-label); position: absolute; bottom: -25px;
+            left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--sub);
+        }
+
+        /* دکمه اصلی */
+        .btn-main {
+            background: var(--primary); color: white; border: none;
+            border-radius: 18px; padding: 18px; width: 100%;
+            font-weight: bold; font-size: 1rem; margin-top: 20px; cursor: pointer;
+        }
+
+        /* نوار ناوبری پایین */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 450px; background: white;
+            display: flex; justify-content: space-around; padding: 15px 0;
+            border-radius: 30px 30px 0 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { border: none; background: none; color: #BDC3C7; font-size: 0.75rem; cursor: pointer; text-align: center; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="page-dashboard">
+            <h2 style="margin-bottom: 5px;">سلام استاد عزیز 👋</h2>
+            <p style="color:var(--sub); margin-bottom: 25px;">خلاصه عملکرد شما در آزمون‌ها</p>
+
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="stat-total">۰</h3><p>کل آزمون‌ها</p></div>
+                <div class="stat-card"><h3 id="stat-avg">۰٪</h3><p>میانگین نمره</p></div>
+                <div class="stat-card"><h3 id="stat-points">۰</h3><p>امتیاز کل</p></div>
+            </div>
+
+            <div class="chart-container">
+                <h4 style="margin:0">روند پیشرفت</h4>
+                <div class="bar-chart" id="performance-chart">
+                    </div>
+            </div>
+
+            <h3 style="margin-top: 30px; font-size: 1rem;">آزمون‌های من</h3>
+            <div id="quiz-list-holder">
+                </div>
+            
+            <button class="btn-main" onclick="showView('page-add')">+ دریافت آزمون جدید</button>
+        </div>
+
+        <div id="page-add" class="hidden" style="text-align: center;">
+            <div class="stat-card" style="padding: 40px 20px;">
+                <h3>دریافت آزمون جدید</h3>
+                <p style="color:var(--sub); margin-bottom: 25px;">لینک دریافتی از معلم را در کادر زیر وارد کنید</p>
+                <input type="text" id="quiz-link" style="width:100%; padding:15px; border-radius:12px; border:1px solid #ddd; background:#f9f9f9; text-align:center; margin-bottom:15px;" placeholder="https://...">
+                <button class="btn-main" onclick="processNewLink()">تایید و ثبت آزمون</button>
+                <button onclick="showView('page-dashboard')" style="background:none; border:none; color:var(--red); margin-top:15px; font-weight:bold; cursor:pointer;">انصراف</button>
+            </div>
+        </div>
+        
+        </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showView('page-dashboard')"><i class="fas fa-home"></i>خانه</button>
+        <button class="nav-item"><i class="fas fa-chart-pie"></i>عملکرد</button>
+        <button class="nav-item"><i class="fas fa-user"></i>پروفایل</button>
+    </div>
+
+    <script>
+        // دیتابیس لوکال
+        let myData = JSON.parse(localStorage.getItem('student_db')) || { quizzes: [], history: [] };
+
+        function saveDB() { localStorage.setItem('student_db', JSON.stringify(myData)); }
+
+        // نمایش صفحات
+        function showView(id) {
+            document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'page-dashboard') updateDashboard();
+        }
+
+        // پردازش لینک جدید
+        function processNewLink() {
+            const url = document.getElementById('quiz-link').value;
+            if(!url.includes('data=')) return alert('لینک اشتباه است!');
+            
+            try {
+                const b64 = url.split('data=')[1];
+                const quiz = JSON.parse(decodeURIComponent(escape(atob(b64))));
+                
+                // جلوگیری از تکرار
+                if(!myData.quizzes.find(q => q.id === quiz.id)) {
+                    myData.quizzes.push(quiz);
+                    saveDB();
+                    alert(`آزمون "${quiz.title}" با موفقیت اضافه شد.`);
+                    showView('page-dashboard');
+                } else {
+                    alert('این آزمون قبلاً اضافه شده است.');
+                }
+            } catch(e) { alert('خطا در خواندن لینک'); }
+        }
+
+        // بروزرسانی داشبورد و نمودار
+        function updateDashboard() {
+            const list = document.getElementById('quiz-list-holder');
+            list.innerHTML = '';
+            
+            document.getElementById('stat-total').innerText = myData.quizzes.length;
+            
+            myData.quizzes.forEach(q => {
+                const item = document.createElement('div');
+                item.className = 'quiz-item';
+                item.innerHTML = `
+                    <div class="quiz-icon-box"><i class="fas fa-book"></i></div>
+                    <div class="quiz-details"><h4>${q.title}</h4><p>${q.questions.length} سوال | ${q.time} دقیقه</p></div>
+                `;
+                list.appendChild(item);
+            });
+
+            // ساخت نمودار میله‌ای (فرضی بر اساس تاریخچه)
+            const chart = document.getElementById('performance-chart');
+            chart.innerHTML = '';
+            const samples = [40, 70, 55, 90, 85, 60, 95]; // در آینده از دیتای واقعی پر می‌شود
+            samples.forEach((val, i) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = val + '%';
+                bar.setAttribute('data-label', 'آزمون ' + (i+1));
+                chart.appendChild(bar);
+            });
+        }
+
+        // اجرای اولیه
+        updateDashboard();
+    </script>
+</body>
+</html>
