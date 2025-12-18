@@ -1,0 +1,15 @@
+{
+  "name": "اپلیکیشن دانش‌آموز",
+  "short_name": "آزمون",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#F8FAFF",
+  "theme_color": "#2D65FF",
+  "icons": [
+    {
+      "src": "1766036251392.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
